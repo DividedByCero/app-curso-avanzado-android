@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Archives</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment"></string>
+    <string name="profile">Profile</string>
+<!--    <string name="default_web_client_id">699387327512-1nccmncf9vgih7pou3nahd5i8kobti60.apps.googleusercontent.com</string>-->
+</resources>
