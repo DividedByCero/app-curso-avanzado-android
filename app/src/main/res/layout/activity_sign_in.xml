@@ -13,11 +13,13 @@
         android:padding="10dp"
         android:layout_height="match_parent">
         <EditText
+            android:id="@+id/sign_in_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Correo"/>
 
         <EditText
+            android:id="@+id/sign_in_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/prompt_password"
@@ -28,10 +30,12 @@
             android:maxLines="1"
             android:singleLine="true" />
         <EditText
+            android:id="@+id/sign_in_username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nombre de Usuario"/>
         <Button
+            android:id="@+id/sign_in_user_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Sign In"/>

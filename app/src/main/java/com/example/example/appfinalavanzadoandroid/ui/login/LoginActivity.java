@@ -38,6 +38,7 @@ import java.util.List;
 
 import com.example.example.appfinalavanzadoandroid.R;
 import com.example.example.appfinalavanzadoandroid.ui.main.MainActivity;
+import com.example.example.appfinalavanzadoandroid.ui.signIn.SignInActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -52,6 +53,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 import static android.Manifest.permission.READ_CONTACTS;
 import static com.firebase.ui.auth.AuthUI.getApplicationContext;
@@ -61,6 +63,12 @@ import static com.firebase.ui.auth.AuthUI.getApplicationContext;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, LoginView {
     public static final int RC_SIGN_IN = 23;
+    public static final int SIGN_IN_USER = 10;
+
+    public static final String USER_NAME = "USER_NAME";
+    public static final String USER_PASSWORD = "USER_PASSWORD";
+    public static final String USER_EMAIL = "USER_EMAIL";
+
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -79,14 +87,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    private View mProgressView, mLoginFormView;
     private LoginPresenter mPresenter;
-
+    private Button mEmailLogInButton, mGoogleViewSignIn, mEmailSignInButton;
     private OnClickListener loginListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-                attemptLogin(v);
+            attemptLogin(v);
         }
     };
 
@@ -97,7 +104,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Set up the login form.
 
         mPresenter = new LoginPresenter(this);
-        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(mainIntent);
         }
@@ -118,13 +125,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(loginListener);
+        mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent signIn = new Intent(getApplicationContext(), SignInActivity.class);
+                startActivityForResult(signIn, SIGN_IN_USER);
+            }
+        });
 
-        Button mEmailLogInButton = (Button) findViewById(R.id.email_log_in_button);
+        mEmailLogInButton = (Button) findViewById(R.id.email_log_in_button);
         mEmailLogInButton.setOnClickListener(loginListener);
 
-        Button mGoogleViewSignIn = (Button) findViewById(R.id.google_sign_in);
+        mGoogleViewSignIn = (Button) findViewById(R.id.google_sign_in);
         mGoogleViewSignIn.setOnClickListener(loginListener);
 
         mLoginFormView = findViewById(R.id.login_form);
@@ -194,9 +207,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         boolean cancel = false;
         View focusView = null;
 
-        if( view.getId() == R.id.google_sign_in){
+        if (view.getId() == R.id.google_sign_in) {
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, view, mPasswordView);
+            mAuthTask = new UserLoginTask(email, password, "", view, mPasswordView);
             mAuthTask.execute((Void) null);
             return;
         }
@@ -227,7 +240,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, view, mPasswordView);
+            mAuthTask = new UserLoginTask(email, password, "", view, mPasswordView);
             mAuthTask.execute((Void) null);
         }
     }
@@ -314,7 +327,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == RC_SIGN_IN){
+        if (requestCode == SIGN_IN_USER) {
+            showProgress(true);
+            Bundle bundle = data.getExtras();
+
+            String username = bundle.getString(USER_NAME);
+            String password = bundle.getString(USER_PASSWORD);
+            String email = bundle.getString(USER_EMAIL);
+
+            mAuthTask = new UserLoginTask(email, password, username, mEmailSignInButton, mPasswordView);
+            mAuthTask.execute((Void) null);
+        }
+        else if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 // Google Sign In was successful, authenticate with Firebase
@@ -337,14 +361,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private final String mEmail;
         private final String mPassword;
+        private final String mUserName;
         private final View mView;
         private final EditText mPasswordView;
 
-        UserLoginTask(String email, String password, View view, EditText passwordView) {
+        UserLoginTask(String email, String password, String userName, View view, EditText passwordView) {
             mEmail = email;
             mPassword = password;
             mView = view;
             mPasswordView = passwordView;
+            mUserName = userName;
         }
 
         @Override
@@ -367,13 +393,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     }
                 });
                 return true;
-            }
-            else if(mView.getId() == R.id.email_sign_in_button){
+            } else if (mView.getId() == R.id.email_sign_in_button) {
                 auth.createUserWithEmailAndPassword(mEmail, mPassword).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        startActivity(mainIntent);
+                        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
+                                .setDisplayName(mUserName)
+                                .build();
+                          authResult.getUser().updateProfile(request).addOnSuccessListener(new OnSuccessListener<Void>() {
+                              @Override
+                              public void onSuccess(Void aVoid) {
+                                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(mainIntent);
+                              }
+                          });
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -383,12 +416,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     }
                 });
                 return true;
-            }
-            else if(mView.getId() == R.id.google_sign_in){
-                GoogleSignInOptions options = new  GoogleSignInOptions.Builder()
-                        .requestEmail()
-                        .requestIdToken(getString(R.string.default_web_client_id))
-                        .build();
+            } else if (mView.getId() == R.id.google_sign_in) {
+                GoogleSignInOptions options = new GoogleSignInOptions.Builder().requestEmail().requestIdToken(getString(R.string.default_web_client_id)).build();
 
                 mGoogleClient = GoogleSignIn.getClient(getApplicationContext(), options);
                 Intent googleSign = mGoogleClient.getSignInIntent();
@@ -409,7 +438,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
         }
-
 
 
     }
