@@ -1,11 +1,15 @@
 package com.example.example.appfinalavanzadoandroid.ui.base;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -14,9 +18,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.example.appfinalavanzadoandroid.R;
+import com.example.example.appfinalavanzadoandroid.ui.login.LoginActivity;
 import com.example.example.appfinalavanzadoandroid.ui.main.DataInterop;
 import com.example.example.appfinalavanzadoandroid.ui.main.MainPresenter;
 import com.example.example.appfinalavanzadoandroid.ui.main.MainView;
+import com.example.example.appfinalavanzadoandroid.ui.submit.SubmitDialog;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -43,7 +49,6 @@ import java.util.UUID;
 import static com.example.example.appfinalavanzadoandroid.ui.main.MainActivity.RC_SIGN_IN;
 
 public class BaseActivity extends AppCompatActivity {
-    public static final int PICK_IMAGE = 0x4343;
     //public static final int NO_USER = 0x5000;
     //public static final int LOGGED = 0x5001;
     //protected int mUserState = NO_USER;
@@ -64,16 +69,16 @@ public class BaseActivity extends AppCompatActivity {
 
 
     protected void SignIn(){
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build()
-        );
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
+        //List<AuthUI.IdpConfig> providers = Arrays.asList(
+        //        new AuthUI.IdpConfig.EmailBuilder().build(),
+        //        new AuthUI.IdpConfig.GoogleBuilder().build()
+        //);
+        //startActivityForResult(
+        //        AuthUI.getInstance()
+        //                .createSignInIntentBuilder()
+        //                .setAvailableProviders(providers)
+        //                .build(),
+        //        RC_SIGN_IN);
     }
 
     @Override
@@ -86,76 +91,21 @@ public class BaseActivity extends AppCompatActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.logout_btn:
-                AuthUI.getInstance()
-                        .signOut(this)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            public void onComplete(@NonNull Task<Void> task) {
-                                mUser = null;
-                                SignIn();
-                            }
-                        });
-                return true;
-            case R.id.submit_pic_btn:
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+                FirebaseAuth.getInstance().signOut();
+                GoogleSignInOptions options = new  GoogleSignInOptions.Builder()
+                        .requestEmail()
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .build();
+
+                GoogleSignIn.getClient(getApplicationContext(), options).signOut();
+                Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(loginActivity);
                 return true;
             default:
-                return super.onOptionsItemSelected(item);
+                break;
         }
-    }
 
-    public void uploadImage(InputStream stream, StorageReference storageReference, final DataInterop interop) {
-
-        if(stream != null)
-        {
-            final ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setTitle("Uploading...");
-            progressDialog.show();
-
-            StorageReference ref = storageReference.child("Images/"+ UUID.randomUUID().toString());
-            ref.putStream(stream)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
-                            progressDialog.dismiss();
-                            final FirebaseDatabase db = FirebaseDatabase.getInstance();
-                            DatabaseReference ref = db.getReference("Images");
-                            int position = interop.getArrayDataLength();
-                            final DatabaseReference subRef = ref.child(Integer.toString(position));
-                            subRef.setValue("");
-                            db.getReference("Images/" + subRef.getKey() + "/author").setValue(mUser.getDisplayName()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    db.getReference("Images/" +  subRef.getKey() + "/file").setValue(taskSnapshot.getMetadata().getName()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            interop.InitializeProfile(FirebaseAuth.getInstance().getCurrentUser());
-                                        }
-                                    });
-                                }
-                            });
-
-                            Toast.makeText(getApplicationContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                    .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                        }
-                    });
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

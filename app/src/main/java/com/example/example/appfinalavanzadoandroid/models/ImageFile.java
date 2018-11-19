@@ -3,6 +3,15 @@ package com.example.example.appfinalavanzadoandroid.models;
 public class ImageFile {
     public String author;
     public String file;
+    public String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public String getAuthor() {
         return author;

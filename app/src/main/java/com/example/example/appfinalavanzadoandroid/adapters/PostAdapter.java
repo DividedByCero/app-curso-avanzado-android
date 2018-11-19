@@ -56,7 +56,11 @@ public class PostAdapter extends BaseAdapter<Post> {
             DateView.setText(new SimpleDateFormat("MM/dd/yyyy").format(post.getDate()));
 
         authorTextView.setText(post.author);
-        textView.setText(post.fileName);
+
+        if(post.title != null)
+            textView.setText( post.title);
+        else
+            textView.setText( post.fileName);
 
         Bitmap bmp = post.getImage();
         if (bmp != null){

@@ -29,7 +29,8 @@
                 android:layout_marginLeft="10dp"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:background="@drawable/ic_launcher_background">
+                android:src="@drawable/ic_person_black_24dp"
+                android:background="@color/colorPrimaryDark">
             </ImageView>
             <TextView
                 android:id="@+id/user_name"

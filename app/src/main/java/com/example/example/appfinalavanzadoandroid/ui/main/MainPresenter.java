@@ -60,11 +60,18 @@ public class MainPresenter implements DataInterop {
     }
 
     private void QueuePostsData(ArrayList<ImageFile> imageFiles, final ArrayList<Post> posts) {
-        final StorageReference ref = mStorage.getReference();
+        final StorageReference ref = mStorage.getReference().child(IMAGES_FOLDER);
         for (ImageFile file : imageFiles) {
-            final StorageReference refChild = ref.child(IMAGES_FOLDER).child(file.file);
+            if (file == null)
+                continue;
+
+            final StorageReference refChild = ref.child(file.file);
             final Post post = new Post();
             post.author = file.author;
+
+            if(file.title != null){
+                post.setTitle(file.title);
+            }
 
             refChild.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
                 @Override

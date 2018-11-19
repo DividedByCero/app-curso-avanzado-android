@@ -6,9 +6,11 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import com.example.example.appfinalavanzadoandroid.models.ImageFile;
 import com.example.example.appfinalavanzadoandroid.models.Post;
 import com.example.example.appfinalavanzadoandroid.models.Usuario;
 import com.example.example.appfinalavanzadoandroid.ui.base.BaseActivity;
+import com.example.example.appfinalavanzadoandroid.ui.submit.SubmitDialog;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -99,6 +102,11 @@ public class MainActivity extends BaseActivity implements MainView {
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
     public void SetUserName(String userName){
         TextView userNameView = findViewById(R.id.user_name);
         userNameView.setText(userName);
@@ -113,23 +121,6 @@ public class MainActivity extends BaseActivity implements MainView {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-
-        if (requestCode == PICK_IMAGE){
-            try {
-                Uri result = data.getData();
-                if(result != null){
-                    InputStream inputStream = getContentResolver().openInputStream(result);
-                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                    StorageReference ref = storage.getReference();
-
-                    uploadImage(inputStream, ref, mPresenter);
-                }
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
 
         if (requestCode == RC_SIGN_IN) {
             // IdpResponse response = IdpResponse.fromResultIntent(data);
@@ -148,4 +139,16 @@ public class MainActivity extends BaseActivity implements MainView {
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.submit_pic_btn){
+                FragmentManager fragmentManager = this.getSupportFragmentManager();
+                SubmitDialog dialog = new SubmitDialog();
+                dialog.SetInterop(mPresenter);
+                dialog.SetWorkingContext(this.getApplicationContext());
+                dialog.show(fragmentManager, "submit_dialog");
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
