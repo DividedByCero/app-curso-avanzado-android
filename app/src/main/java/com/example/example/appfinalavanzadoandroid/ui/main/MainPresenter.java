@@ -105,11 +105,19 @@ public class MainPresenter implements MainPresenterManager {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     GenericTypeIndicator<ArrayList<ImageFile>> generic = new GenericTypeIndicator<ArrayList<ImageFile>>() {};
-                    ArrayList<ImageFile> _values = dataSnapshot.getValue(generic);
+
+                    if(dataSnapshot.getValue() != null){
+                        ArrayList<ImageFile> _values = dataSnapshot.getValue(generic);
+                        mView.SetRecycleViewAdapter(_values);
+                    }
+                    else{
+                        ArrayList<ImageFile> _values = new ArrayList<>();
+                        mView.SetRecycleViewAdapter(_values);
+                    }
                     mUserData = new Usuario(loggedUser.getDisplayName());
                     mView.SetUserName(mUserData.Uid);
                     mView.SetProfilePicture(loggedUser);
-                    mView.SetRecycleViewAdapter(_values);
+
                     mView.DisabledProgressBar();
                 }
                 @Override
