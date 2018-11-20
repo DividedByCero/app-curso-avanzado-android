@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Archives</string>
+    <string name="app_name">Fotosocial</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment"></string>
@@ -23,5 +23,7 @@
     <string name="SubirImagen">Subir Image</string>
     <string name="SubitTextDialog">Subir</string>
     <string name="CancelarTextDialog">Cancelar</string>
+    <string name="TitleNotFoundMessage">Titulo vacio, favor especificar al momento de subir una imagen</string>
+    <string name="NoImagenAnexada">No se anexo ninguna imagen.</string>
     <!--    <string name="default_web_client_id">699387327512-1nccmncf9vgih7pou3nahd5i8kobti60.apps.googleusercontent.com</string>-->
 </resources>

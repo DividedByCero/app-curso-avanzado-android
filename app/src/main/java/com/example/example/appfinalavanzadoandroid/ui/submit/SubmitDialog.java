@@ -26,7 +26,7 @@ import android.widget.Toast;
 
 import com.example.example.appfinalavanzadoandroid.R;
 import com.example.example.appfinalavanzadoandroid.models.ImageFile;
-import com.example.example.appfinalavanzadoandroid.ui.main.DataInterop;
+import com.example.example.appfinalavanzadoandroid.ui.main.MainPresenterManager;
 import com.example.example.appfinalavanzadoandroid.ui.main.MainView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -48,7 +48,7 @@ import java.util.UUID;
 public class SubmitDialog extends DialogFragment {
     public static final int PICK_IMAGE = 0x4343;
     private FirebaseUser mUser;
-    private DataInterop mInterop;
+    private MainPresenterManager mInterop;
     private Dialog mDialog;
     private View mView;
     private InputStream mInputStream;
@@ -67,7 +67,7 @@ public class SubmitDialog extends DialogFragment {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(mWorkingContext);
     }
 
-    public void SetInterop(DataInterop interop) {
+    public void SetInterop(MainPresenterManager interop) {
         mInterop = interop;
     }
 
@@ -90,7 +90,7 @@ public class SubmitDialog extends DialogFragment {
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+                startActivityForResult(Intent.createChooser(intent, "Seleccionar Imagen"), PICK_IMAGE);
             }
         });
 
@@ -114,17 +114,23 @@ public class SubmitDialog extends DialogFragment {
     }
 
     public void uploadImage(InputStream stream, StorageReference storageReference) {
-
         if (stream != null) {
             final ProgressDialog progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setTitle("Uploading...");
+            progressDialog.setTitle("Subiendo...");
             progressDialog.show();
 
             StorageReference ref = storageReference.child("Images/" + UUID.randomUUID().toString());
             ref.putStream(stream).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
-                    final String Title = ((EditText) mView.findViewById(R.id.title_submit_dialog)).getText().toString();
+                    final String title = ((EditText) mView.findViewById(R.id.title_submit_dialog)).getText().toString();
+
+                    if(title.isEmpty()){
+                        Toast.makeText(mWorkingContext.getApplicationContext(), R.string.TitleNotFoundMessage, Toast.LENGTH_LONG).show();
+                        progressDialog.dismiss();
+                        return;
+                    }
+
                     progressDialog.dismiss();
                     final FirebaseDatabase db = FirebaseDatabase.getInstance();
                     DatabaseReference ref = db.getReference("Images");
@@ -134,7 +140,7 @@ public class SubmitDialog extends DialogFragment {
                     final ImageFile file = new ImageFile();
                     file.setFile(taskSnapshot.getMetadata().getName());
                     file.setAuthor(mUser.getDisplayName());
-                    file.setTitle(Title);
+                    file.setTitle(title);
 
                     if (ActivityCompat.checkSelfPermission(mWorkingContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mWorkingContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -155,7 +161,7 @@ public class SubmitDialog extends DialogFragment {
                         CreateFirebaseImageFile(db, subRef, file);
                     }
 
-                    Toast.makeText(mWorkingContext, "Uploaded", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mWorkingContext, "Imagen Subida Exitosamente!", Toast.LENGTH_SHORT).show();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -170,6 +176,9 @@ public class SubmitDialog extends DialogFragment {
                     progressDialog.setMessage("Uploaded " + (int) progress + "%");
                 }
             });
+        }
+        else{
+            Toast.makeText(mWorkingContext.getApplicationContext(), R.string.NoImagenAnexada, Toast.LENGTH_LONG).show();
         }
     }
 

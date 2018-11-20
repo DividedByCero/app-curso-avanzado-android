@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +68,7 @@ public class MainActivity extends BaseActivity implements MainView {
     MainPresenter mPresenter;
     RecyclerView.LayoutManager mLayoutManager;
 
+    @BindView(R.id.progress_loading) ProgressBar mProgressBar;
     @BindView(R.id.post_recycleView) RecyclerView mRecycleView;
 
     @Override
@@ -86,10 +88,10 @@ public class MainActivity extends BaseActivity implements MainView {
             }
         }
 
-
         ButterKnife.bind(this);
         mPresenter = new MainPresenter(this);
         SignIn();
+        EnableProgressBar();
     }
 
     public Context GetLayoutContext() {
@@ -101,6 +103,16 @@ public class MainActivity extends BaseActivity implements MainView {
         mRecycleView.setLayoutManager(mLayoutManager);
         mAdapter = mPresenter.GetPostAdapter(imagesReference);
         mRecycleView.setAdapter(mAdapter);
+    }
+
+    public void EnableProgressBar(){
+        mProgressBar.setVisibility(View.VISIBLE);
+        mRecycleView.setVisibility(View.INVISIBLE);
+    }
+
+    public void DisabledProgressBar(){
+        mProgressBar.setVisibility(View.GONE);
+        mRecycleView.setVisibility(View.VISIBLE);
     }
 
     public void NotifyChange(){

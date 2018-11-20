@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.example.appfinalavanzadoandroid.R;
+import com.example.example.appfinalavanzadoandroid.helpers.UserHelpers;
 import com.example.example.appfinalavanzadoandroid.ui.main.MainActivity;
 import com.example.example.appfinalavanzadoandroid.ui.signIn.SignInActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -84,8 +85,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private GoogleSignInClient mGoogleClient;
-    private UserLoginTask mAuthTask = null;
+    private LoginPresenter.UserLoginTask mAuthTask = null;
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -160,6 +160,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
     }
 
+    public void DismissAuthtask(){
+        mAuthTask = null;
+    }
+
+    public Context GetAuthContext(){
+        return getApplicationContext();
+    }
+
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -225,13 +233,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         if (view.getId() == R.id.google_sign_in) {
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, "", view, mPasswordView);
+            mAuthTask = mPresenter.GetUserTaskInstance(email, password, "", view, mPasswordView);
             mAuthTask.execute((Void) null);
             return;
         }
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !mPresenter.isPasswordValid(password)) {
+        if (!TextUtils.isEmpty(password) && UserHelpers.isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -242,7 +250,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!mPresenter.isEmailValid(email)) {
+        } else if (UserHelpers.isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -256,7 +264,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, "", view, mPasswordView);
+            mAuthTask = mPresenter.GetUserTaskInstance(email, password, "", view, mPasswordView);
             mAuthTask.execute((Void) null);
         }
     }
@@ -265,7 +273,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
+    public void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
@@ -351,7 +359,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String password = bundle.getString(USER_PASSWORD);
             String email = bundle.getString(USER_EMAIL);
 
-            mAuthTask = new UserLoginTask(email, password, username, mEmailSignInButton, mPasswordView);
+            mAuthTask = mPresenter.GetUserTaskInstance(email, password, username, mEmailSignInButton, mPasswordView);
             mAuthTask.execute((Void) null);
         }
         else if (requestCode == RC_SIGN_IN) {
@@ -373,92 +381,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-        private final String mUserName;
-        private final View mView;
-        private final EditText mPasswordView;
-
-        UserLoginTask(String email, String password, String userName, View view, EditText passwordView) {
-            mEmail = email;
-            mPassword = password;
-            mView = view;
-            mPasswordView = passwordView;
-            mUserName = userName;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            FirebaseAuth auth = FirebaseAuth.getInstance();
-
-            if (mView.getId() == R.id.email_log_in_button) {
-                auth.signInWithEmailAndPassword(mEmail, mPassword).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                    @Override
-                    public void onSuccess(AuthResult authResult) {
-                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        startActivity(mainIntent);
-                        finish();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // mPasswordView.setError(getString(R.string.user_does_not_exist));
-                        mPasswordView.setError(e.getMessage());
-                        mPasswordView.requestFocus();
-                    }
-                });
-                return true;
-            } else if (mView.getId() == R.id.email_sign_in_button) {
-                auth.createUserWithEmailAndPassword(mEmail, mPassword).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                    @Override
-                    public void onSuccess(AuthResult authResult) {
-                        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(mUserName)
-                                .build();
-                          authResult.getUser().updateProfile(request).addOnSuccessListener(new OnSuccessListener<Void>() {
-                              @Override
-                              public void onSuccess(Void aVoid) {
-                                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(mainIntent);
-                                    finish();
-                              }
-                          });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        mPasswordView.setError(e.getMessage());
-                        mPasswordView.requestFocus();
-                    }
-                });
-                return true;
-            } else if (mView.getId() == R.id.google_sign_in) {
-                GoogleSignInOptions options = new GoogleSignInOptions.Builder().requestEmail().requestIdToken(getString(R.string.default_web_client_id)).build();
-
-                mGoogleClient = GoogleSignIn.getClient(getApplicationContext(), options);
-                Intent googleSign = mGoogleClient.getSignInIntent();
-                startActivityForResult(googleSign, RC_SIGN_IN);
-            }
-
-            return false;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-
-
-    }
 
     public AppCompatActivity GetLayoutContext() {
         return this;

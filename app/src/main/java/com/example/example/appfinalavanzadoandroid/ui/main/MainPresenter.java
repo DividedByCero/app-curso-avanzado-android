@@ -1,20 +1,16 @@
 package com.example.example.appfinalavanzadoandroid.ui.main;
 
-import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import com.example.example.appfinalavanzadoandroid.R;
 import com.example.example.appfinalavanzadoandroid.adapters.PostAdapter;
 import com.example.example.appfinalavanzadoandroid.models.ImageFile;
 import com.example.example.appfinalavanzadoandroid.models.Post;
 import com.example.example.appfinalavanzadoandroid.models.Usuario;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -24,17 +20,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
-public class MainPresenter implements DataInterop {
+public class MainPresenter implements MainPresenterManager {
     public static final String IMAGES_FOLDER = "Images";
     public static final String STORAGE_URL = "gs://proyectofinalavanzadoandroid.appspot.com";
     private MainView mView;
@@ -118,6 +110,7 @@ public class MainPresenter implements DataInterop {
                     mView.SetUserName(mUserData.Uid);
                     mView.SetProfilePicture(loggedUser);
                     mView.SetRecycleViewAdapter(_values);
+                    mView.DisabledProgressBar();
                 }
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {

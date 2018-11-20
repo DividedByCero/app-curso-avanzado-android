@@ -16,4 +16,6 @@ public interface MainView {
     void NotifyChange();
     void SetUserName(String userName);
     void SetProfilePicture(FirebaseUser loggedUser);
+    void EnableProgressBar();
+    void DisabledProgressBar();
 }

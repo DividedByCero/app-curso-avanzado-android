@@ -55,13 +55,19 @@ public class PostAdapter extends BaseAdapter<Post> {
     @Override
     public void onBindViewHolder(@NonNull CustomViewHolder customViewHolder, int i) {
         View view = customViewHolder.mView;
+        Post post = GetItem(i);
+        Bitmap bmp = post.getImage();
+
         TextView textView = view.findViewById(R.id.image_title);
         TextView DateView = view.findViewById(R.id.date_text);
         TextView authorTextView = view.findViewById(R.id.author_text);
         ImageView imgView = view.findViewById(R.id.image_view);
         ImageButton imgBtn = view.findViewById(R.id.share_btn);
         ImageButton locationBtn = view.findViewById(R.id.location_btn);
-        Post post = GetItem(i);
+
+        if (bmp != null){
+            imgView.setImageBitmap(bmp);
+        }
 
         imgBtn.setOnClickListener(GetListener(post));
 
@@ -73,18 +79,13 @@ public class PostAdapter extends BaseAdapter<Post> {
             locationBtn.setOnClickListener(GetLocationListener(post));
         }
 
+        authorTextView.setText(post.author);
+
         if(post.getDate() != null)
             DateView.setText(new SimpleDateFormat("MM/dd/yyyy").format(post.getDate()));
-
-        authorTextView.setText(post.author);
         if(post.title != null)
             textView.setText( post.title);
         else
             textView.setText( post.fileName);
-
-        Bitmap bmp = post.getImage();
-        if (bmp != null){
-            imgView.setImageBitmap(bmp);
-        }
     }
 }
