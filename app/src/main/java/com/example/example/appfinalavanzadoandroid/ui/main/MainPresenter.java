@@ -69,6 +69,10 @@ public class MainPresenter implements DataInterop {
             final Post post = new Post();
             post.author = file.author;
 
+            if(file.location != null){
+                post.setLocation(file.location);
+            }
+
             if(file.title != null){
                 post.setTitle(file.title);
             }

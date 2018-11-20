@@ -19,5 +19,9 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="ImagenAgregada">Imagen Agregada</string>
+    <string name="SubirImagen">Subir Image</string>
+    <string name="SubitTextDialog">Subir</string>
+    <string name="CancelarTextDialog">Cancelar</string>
     <!--    <string name="default_web_client_id">699387327512-1nccmncf9vgih7pou3nahd5i8kobti60.apps.googleusercontent.com</string>-->
 </resources>

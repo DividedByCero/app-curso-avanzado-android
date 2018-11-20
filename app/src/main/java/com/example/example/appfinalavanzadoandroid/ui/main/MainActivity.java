@@ -1,7 +1,9 @@
 package com.example.example.appfinalavanzadoandroid.ui.main;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,6 +73,20 @@ public class MainActivity extends BaseActivity implements MainView {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // No explanation needed; request the permission
+                requestPermissions( new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+            }
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                // No explanation needed; request the permission
+                requestPermissions( new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+            }
+        }
+
+
         ButterKnife.bind(this);
         mPresenter = new MainPresenter(this);
         SignIn();

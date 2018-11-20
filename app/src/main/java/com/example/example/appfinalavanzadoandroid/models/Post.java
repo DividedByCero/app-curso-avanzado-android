@@ -10,6 +10,17 @@ public class Post {
     public String fileName;
     public String author;
     public Bitmap image;
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String location;
+
     private Uri downloadUrl;
     public Date date;
 

@@ -8,12 +8,6 @@
         android:orderInCategory="1"
         android:icon="@drawable/ic_cloud_upload_black_24dp" />
     <item
-        android:id="@+id/profile_page_btn"
-        android:showAsAction="always"
-        android:title="profile"
-        android:orderInCategory="2"
-        android:icon="@drawable/ic_assignment_ind_black_24dp" />
-    <item
         android:id="@+id/logout_btn"
         android:showAsAction="always"
         android:title="Log Out"

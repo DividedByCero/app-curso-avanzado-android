@@ -1,5 +1,6 @@
 package com.example.example.appfinalavanzadoandroid.ui.login;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -9,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -102,6 +104,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // No explanation needed; request the permission
+                requestPermissions( new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+            }
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                // No explanation needed; request the permission
+                requestPermissions( new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+            }
+        }
+
 
         mPresenter = new LoginPresenter(this);
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -383,6 +399,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     public void onSuccess(AuthResult authResult) {
                         Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                         startActivity(mainIntent);
+                        finish();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -405,6 +422,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                               public void onSuccess(Void aVoid) {
                                     Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     startActivity(mainIntent);
+                                    finish();
                               }
                           });
                     }

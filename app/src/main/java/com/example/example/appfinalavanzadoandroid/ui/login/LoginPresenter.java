@@ -41,7 +41,7 @@ public class LoginPresenter {
                             // Sign in success, update UI with the signed-in user's information
                             Intent mainIntent = new Intent(mView.GetLayoutContext(), MainActivity.class);
                             mView.startActivity(mainIntent);
-
+                            mView.finish();
                         }
                     }
                 });
